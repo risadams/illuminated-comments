@@ -1,7 +1,11 @@
-Memeful Comments Release Notes
-========================================
-copyright Marius Bancila (c) 2017 - 2019
-========================================
+Illuminated Comments Release Notes
+============================================================
+copyright Marius Bancila (c) 2017 - 2019, Ris Adams (c) 2021
+============================================================
+
+v2.0.0
+- renamed project to Illuminated Comments to differentiate from original project
+- support for Visual Studio 2022
 
 v1.4.0
 - support for Visual Studio 2019
