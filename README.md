@@ -31,9 +31,9 @@ class Sorting
 ![result](MemefulComments/screenshot.png)
 
 ## Installation
-Download or clone the repository and double-click/activate the MemefulComments.vsix file in Explorer.
+Download the latest release from [GitHub](https://github.com/risadams/Illuminated-comments/releases)
 
-Alternatively, you can install it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=MariusBancila.memefulcomments).
+Alternatively, you can install it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RisAdams.Illuminatedcomments).
 
 ## How to use it
 To display images, including animated ones, in your source code in any of the supported languages, you have to add an `<image>` tag. The following attributes are supported:
