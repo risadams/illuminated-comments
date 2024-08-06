@@ -31,7 +31,7 @@ namespace IlluminatedComments
         ///     after the selection layer in the Z-order
         /// </summary>
         [Export(typeof(AdornmentLayerDefinition))] [Name("CommentImageAdornmentLayer")] [Order(After = PredefinedAdornmentLayers.Selection, Before = PredefinedAdornmentLayers.Text)]
-        private AdornmentLayerDefinition editorAdornmentLayer;
+        private readonly AdornmentLayerDefinition editorAdornmentLayer;
 
 #pragma warning restore 649, 169
 

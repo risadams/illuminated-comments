@@ -5,10 +5,14 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -22,7 +26,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IlluminatedComments</RootNamespace>
     <AssemblyName>IlluminatedComments</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
@@ -104,25 +108,25 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.CoreUtility">
-      <Version>17.0.487</Version>
+      <Version>17.10.191</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.Framework">
-      <Version>17.0.31902.203</Version>
+      <Version>17.10.40170</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Text.Data">
-      <Version>17.0.487</Version>
+      <Version>17.10.191</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Text.Logic">
-      <Version>17.0.487</Version>
+      <Version>17.10.191</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Text.UI">
-      <Version>17.0.487</Version>
+      <Version>17.10.191</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf">
-      <Version>17.0.487</Version>
+      <Version>17.10.191</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools">
-      <Version>17.0.5232</Version>
+      <Version>17.11.414</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

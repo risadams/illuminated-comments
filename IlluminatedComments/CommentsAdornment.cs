@@ -25,8 +25,8 @@ namespace IlluminatedComments
         private string _contentTypeName;
         private readonly ConcurrentDictionary<int, ITextViewLine> _editedLines = new ConcurrentDictionary<int, ITextViewLine>();
         private readonly List<ITagSpan<ErrorTag>> _errorTags;
-        private bool _initialised1;
-        private bool _initialised2;
+        private bool _initialized1;
+        private bool _initialized2;
 
         private readonly IAdornmentLayer _layer;
 
@@ -34,7 +34,7 @@ namespace IlluminatedComments
         private readonly ITextDocumentFactoryService _textDocumentFactory;
 
         private readonly Timer _timer = new Timer(200);
-        private readonly ConcurrentDictionary<WebClient, ImageParameters> _toaddImages = new ConcurrentDictionary<WebClient, ImageParameters>();
+        private readonly ConcurrentDictionary<WebClient, ImageParameters> _toAddImages = new ConcurrentDictionary<WebClient, ImageParameters>();
         private readonly VariableExpander _variableExpander;
         private readonly IWpfTextView _view;
 
@@ -58,7 +58,7 @@ namespace IlluminatedComments
             _errorTags        = new List<ITagSpan<ErrorTag>>();
             _variableExpander = new VariableExpander(_view, serviceProvider);
 
-            _timer.Elapsed += _timer_Elapsed;
+            _timer.Elapsed += On_Timer_Elapsed;
         }
 
         public static bool Enabled { get; set; }
@@ -105,16 +105,16 @@ namespace IlluminatedComments
                 // have been added, so the lines don't resize to the image height. So here's a workaround:
                 // Changing the zoom level triggers the required update.
                 // Need to do it twice - once to trigger the event, and again to change it back to the user's expected level.
-                if (!_initialised1)
+                if (!_initialized1)
                 {
                     _view.ZoomLevel++;
-                    _initialised1 = true;
+                    _initialized1 = true;
                 }
 
-                if (!_initialised2)
+                if (!_initialized2)
                 {
                     _view.ZoomLevel--;
-                    _initialised2 = true;
+                    _initialized2 = true;
                 }
             }
             catch (Exception ex)
@@ -129,10 +129,11 @@ namespace IlluminatedComments
             _timer.Start();
         }
 
-        private void _timer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void On_Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _timer.Stop();
 
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             Application.Current.Dispatcher.Invoke(() =>
             {
                 string filepath = null;
@@ -182,8 +183,7 @@ namespace IlluminatedComments
 
                     if (xmlParseException != null)
                     {
-                        CommentImage commentImage;
-                        if (Images.TryRemove(lineNumber, out commentImage))
+                        if (Images.TryRemove(lineNumber, out var commentImage))
                         {
                             _layer.RemoveAdornment(commentImage);
                             commentImage.Dispose();
@@ -204,7 +204,7 @@ namespace IlluminatedComments
                         return new CommentImage(_variableExpander);
                     }, (ln, img) =>
                     {
-                        if (img.OriginalUrl == imageUrl && img.Scale != scale)
+                        if (img.OriginalUrl == imageUrl && (Math.Abs(img.Scale - scale) > float.Epsilon))
                         {
                             // URL same but scale changed
                             img.Scale = scale;
@@ -237,7 +237,7 @@ namespace IlluminatedComments
                                 var client   = new WebClient();
                                 client.DownloadDataCompleted += Client_DownloadDataCompleted;
 
-                                _toaddImages.TryAdd(
+                                _toAddImages.TryAdd(
                                     client,
                                     new ImageParameters
                                     {
@@ -266,7 +266,7 @@ namespace IlluminatedComments
                 else
                 {
                     Images.TryRemove(lineNumber, out var commentImage);
-                    commentImage.Dispose();
+                    commentImage?.Dispose();
                 }
             }
             catch (Exception ex)
@@ -279,27 +279,28 @@ namespace IlluminatedComments
         {
             try
             {
-                var client = sender as WebClient;
-
-                client.DownloadDataCompleted -= Client_DownloadDataCompleted;
-
-                if (_toaddImages.TryGetValue(client, out var item))
+                if (sender is WebClient client)
                 {
-                    var data = e.Result;
-                    File.WriteAllBytes(item.LocalPath, data);
-                    ImageCache.Instance.Add(item.Uri, item.LocalPath);
-                    _processingUris.Remove(item.Uri);
+                    client.DownloadDataCompleted -= Client_DownloadDataCompleted;
 
-                    ProcessImage(item.Image,
-                                 item.LocalPath,
-                                 item.Uri,
-                                 item.Line,
-                                 item.LineNumber,
-                                 item.Span,
-                                 item.Scale,
-                                 item.Filepath);
+                    if (_toAddImages.TryGetValue(client, out var item))
+                    {
+                        var data = e.Result;
+                        File.WriteAllBytes(item.LocalPath, data);
+                        ImageCache.Instance.Add(item.Uri, item.LocalPath);
+                        _processingUris.Remove(item.Uri);
 
-                    _toaddImages.TryRemove(client, out var value);
+                        ProcessImage(item.Image,
+                            item.LocalPath,
+                            item.Uri,
+                            item.Line,
+                            item.LineNumber,
+                            item.Span,
+                            item.Scale,
+                            item.Filepath);
+
+                        _toAddImages.TryRemove(client, out var value);
+                    }
                 }
             }
             catch (Exception ex)
@@ -322,7 +323,7 @@ namespace IlluminatedComments
                 // Position image and add as adornment
                 if (imageLoadingException == null)
                 {
-                    AddAdorment(image, line, lineNumber, span);
+                    AddAdornment(image, line, span);
                 }
                 else
                 {
@@ -341,7 +342,7 @@ namespace IlluminatedComments
             }
         }
 
-        private void AddAdorment(UIElement element, ITextViewLine line, int lineNumber, SnapshotSpan span)
+        private void AddAdornment(UIElement element, ITextViewLine line, SnapshotSpan span)
         {
             Geometry geometry = null;
             try

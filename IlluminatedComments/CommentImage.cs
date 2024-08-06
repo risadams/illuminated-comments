@@ -2,6 +2,8 @@
 using System.IO;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using WpfAnimatedGif;
 
 namespace IlluminatedComments
@@ -71,6 +73,7 @@ namespace IlluminatedComments
         public bool TrySet(string imageUrl, string originalUrl, double scale, string filepath, out Exception exception)
         {
             exception = null;
+            if (string.IsNullOrEmpty(filepath)) return false;
             try
             {
                 imageUrl    = _variableExpander.ProcessText(imageUrl);
@@ -88,11 +91,17 @@ namespace IlluminatedComments
             }
         }
 
-        private bool IsAbsoluteUri(string uri) => Uri.TryCreate(uri, UriKind.Absolute, out var result);
+        private bool IsAbsoluteUri(string uri) => Uri.TryCreate(uri, UriKind.Absolute, out _);
 
         private BitmapImage LoadImage(string uri, string filepath)
         {
-            if (!IsAbsoluteUri(uri)) uri = Path.Combine(Path.GetDirectoryName(filepath), uri);
+            // fail early if file or path is not found.
+            if(string.IsNullOrEmpty(filepath)) return null;
+
+            var dirPath = Path.GetDirectoryName(filepath);
+            if(string.IsNullOrEmpty(dirPath)) return null;
+
+            if (!IsAbsoluteUri(uri)) uri = Path.Combine(dirPath, uri);
 
             fileSystemWatcher.EnableRaisingEvents = false;
             fileSystemWatcher.Path                = Path.GetDirectoryName(uri);
@@ -132,11 +141,17 @@ namespace IlluminatedComments
 
         public override string ToString() => Url;
 
-        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e) => Dispatcher.Invoke(() =>
+        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            Source = LoadImage(e.FullPath, string.Empty);
-            Scale  = _scale;
-            InvalidateVisual();
-        });
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                if (string.IsNullOrEmpty(e.FullPath)) return;
+                Source = LoadImage(e.FullPath, string.Empty);
+                Scale = _scale;
+                InvalidateVisual();
+            });
+            
+        }
     }
 }

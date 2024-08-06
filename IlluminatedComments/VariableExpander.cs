@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
@@ -36,7 +37,7 @@ namespace IlluminatedComments
             _variableMatcher = new Regex(VARIABLE_PATTERN, RegexOptions.Compiled);
             try
             {
-                populateVariableValues();
+                PopulateVariableValuesAsync();
             }
             catch (Exception ex)
             {
@@ -51,7 +52,7 @@ namespace IlluminatedComments
         /// <returns>Processed URL string</returns>
         public string ProcessText(string urlString)
         {
-            var processedText = _variableMatcher.Replace(urlString, evaluator);
+            var processedText = _variableMatcher.Replace(urlString, Evaluator);
             return processedText;
         }
 
@@ -60,7 +61,7 @@ namespace IlluminatedComments
         /// </summary>
         /// <param name="match"></param>
         /// <returns></returns>
-        private string evaluator(Match match)
+        private string Evaluator(Match match)
         {
             var variableName = match.Value;
             if (string.Compare(variableName, PROJECTDIR_PATTERN, StringComparison.InvariantCultureIgnoreCase) == 0)
@@ -80,8 +81,10 @@ namespace IlluminatedComments
         ///     TODO: If additional variables are added that reference the path to the document, handle cases of 'Save as' /
         ///     renaming
         /// </remarks>
-        private void populateVariableValues()
+        private async Task PopulateVariableValuesAsync()
         {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             _projectDirectory  = "";
             _solutionDirectory = "";
 
